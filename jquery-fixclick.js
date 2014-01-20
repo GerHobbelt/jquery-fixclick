@@ -17,24 +17,25 @@ if (jQuery) {
             _.dblclick = dblclick_handler;
             _.firstClick = false;
             _.timer = null;
-            _.delay = 300;
             $(this)
             .click(function (e) {
                 var _self = this;
                 _self.e = e;
                 _.firstClick == false ? _.timer = setTimeout(function () {
-                    _.click.call(_self, _self.e);
+                    click_handler.call(_self, _self.e);
                     _.firstClick = false;
-                }, _.delay) : null;
+                }, $.fn.fixClick.clickDelay) : null;
                 _.firstClick = true;
             })
             .dblclick(function (e) {
                 var _self = this;
                 clearTimeout(_.timer);
                 _.firstClick = false;
-                _.dblclick.call(_self, e);
+                dblclick_handler.call(_self, e);
             });
             return this;
-        }
+        };
+
+        $.fn.fixClick.clickDelay = 300;
     })(jQuery);
 }
