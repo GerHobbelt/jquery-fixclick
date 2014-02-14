@@ -18,7 +18,9 @@ if (jQuery) {
             _.firstClick = false;
             _.timer = null;
             $(this)
-            .click(function (e) {
+            .unbind("click.fixclick")
+            .unbind("dblclick.fixclick")
+            .on("click.fixclick", function (e) {
                 var _self = this;
                 _self.e = e;
                 _.firstClick == false ? _.timer = setTimeout(function () {
@@ -27,7 +29,7 @@ if (jQuery) {
                 }, $.fn.fixClick.clickDelay) : null;
                 _.firstClick = true;
             })
-            .dblclick(function (e) {
+            .on("dblclick.fixclick", function (e) {
                 var _self = this;
                 clearTimeout(_.timer);
                 _.firstClick = false;
