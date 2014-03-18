@@ -15,7 +15,6 @@ if (jQuery) {
             var _ = this;
             _.click = click_handler;
             _.dblclick = dblclick_handler;
-            _.firstClick = false;
             _.timer = null;
             $(this)
             .unbind("click.fixclick")
@@ -23,16 +22,17 @@ if (jQuery) {
             .on("click.fixclick", function (e) {
                 var _self = this;
                 _self.e = e;
-                _.firstClick == false ? _.timer = setTimeout(function () {
-                    click_handler.call(_self, _self.e);
-                    _.firstClick = false;
-                }, $.fn.fixClick.clickDelay) : null;
-                _.firstClick = true;
+                if (!_.timer) {
+                    _.timer = setTimeout(function () {
+                        click_handler.call(_self, _self.e);
+                        _.timer = null;
+                    }, $.fn.fixClick.clickDelay);
+                }
             })
             .on("dblclick.fixclick", function (e) {
                 var _self = this;
                 clearTimeout(_.timer);
-                _.firstClick = false;
+                _.timer = null;
                 dblclick_handler.call(_self, e);
             });
             return this;
