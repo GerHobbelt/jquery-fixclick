@@ -23,11 +23,72 @@ if (jQuery) {
                 var _self = this;
                 _self.e = e;
                 if (!_.timer) {
+                    // As we delay the click event we need to (shallow) clone the event as we must prevent
+                    // any manipulations of the event object from reaching our registered click event handler.
+                    // This way we prevent the e.preventDefault(), etc. below from killing any rigorously
+                    // checking event handler invoked in here:
+                    var originalEvent = e.originalEvent;
+                    var event;
+                    if (originalEvent) {
+                        if (document.createEvent) {
+                            event = document.createEvent("MouseEvents");
+                            event.initMouseEvent(
+                                originalEvent.type, 
+                                originalEvent.bubbles, 
+                                originalEvent.cancelable, 
+                                originalEvent.view, 
+                                originalEvent.detail,
+                                originalEvent.screenX, 
+                                originalEvent.screenY, 
+                                originalEvent.clientX, 
+                                originalEvent.clientY,
+                                originalEvent.ctrlKey, 
+                                originalEvent.altKey, 
+                                originalEvent.shiftKey, 
+                                originalEvent.metaKey,
+                                originalEvent.button, 
+                                originalEvent.relatedTarget || document.body.parentNode 
+                            );
+                        } 
+                        else if ( document.createEventObject ) {
+                            event = this.event();
+                            event.button = event.button;
+                        }
+                        if (event) {
+                            for (var attr in originalEvent) {
+                                if (originalEvent.hasOwnProperty(attr) && typeof originalEvent[attr] !== 'function') {
+                                    event[attr] = originalEvent[attr];
+                                }
+                            }
+                        }
+                    }
+
+                    var e2 = $.extend(
+                        new $.Event(),
+                        e,
+                        {
+                            isSimulated: true,
+                            originalEvent: event
+                        }
+                    );
+                    if (e.isDefaultPrevented()) {
+                        e2.preventDefault();
+                    }
+                    if (e.isPropagationStopped()) {
+                        e2.stopPropagation();
+                    }
+
                     _.timer = setTimeout(function () {
-                        click_handler.call(_self, _self.e);
+                        click_handler.call(_self, e2);
                         _.timer = null;
                     }, $.fn.fixClick.clickDelay);
                 }
+                // Since we delay the click event to prevent it from firing as part of a doubleclick event,
+                // we have to assume a few things.
+                // 
+                // Here we assume we DO NOT want this event to 'bubble up' the DOM tree as we'll be
+                // handling it here, anyway.
+                e.stopPropagation();
             })
             .on("dblclick.fixclick", function (e) {
                 var _self = this;
