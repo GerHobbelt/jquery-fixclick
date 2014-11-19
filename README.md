@@ -1,7 +1,7 @@
 jquery-fixclick
 ===============
 
-clone of [AlloVince's fixclick plugin](http://allo.ave7.net/) - his site is down so this is based on the v1.0 floating around...
+augmented clone/fork of [AlloVince's fixclick plugin](http://allo.ave7.net/) - his site is down so this is based on the v1.0 floating around...
 
 
 
@@ -43,10 +43,59 @@ Note that the single-click event will be delayed by about 300 ms. This is unfort
 
 ## Usage
 
+Example usage:
+
 ```
-$("#test").fixClick(fuction(){
+$("#test").fixClick(function (e) {
   // do something here when click
-},function(){
+  //
+  // Note: this handler will be delayed! 
+  // ($.fn.fixClick.clickDelay = 300 milliseconds by default)
+  //
+  // `e` event object is a clone of the original event and has
+  // its `.simulated` field set to boolean `true`.
+  ...
+}, function (e) {
   // do something here when dblclick
+  //
+  // `e` is the usual event object you'ld expect for any jQuery
+  // dblclick action. 
+  ...
+});
+```
+
+Enhanced example usage:
+
+```
+$("#test").fixClick(function (e) {
+  // do something here when click
+  //
+  // Note: this handler will be delayed! 
+  // ($.fn.fixClick.clickDelay = 300 milliseconds by default)
+  //
+  // `e` event object is a clone of the original event and has
+  // its `.simulated` field set to boolean `true`.
+  ...
+}, function (e) {
+  // do something here when dblclick
+  //
+  // `e` is the usual event object you'ld expect for any jQuery
+  // dblclick action. 
+  ...
+}, function (e) {
+  // this optional handler gets invoked *immediately* when
+  // a click event arrives. Here you may perform some app-specific
+  // setup/signaling.
+  //
+  // Warning/Note: this handler is, of course, invoked for each
+  // click event, hence it will also be invoked for a dblclick.
+  // When you wish jQuery-FixClick to *not* set up and fire a
+  // delayed click handler (the first argument of this fixClick()
+  // call), you can accomplish this by invoking
+  // `e.stopImmediatePropagation()`.
+  ...
+  if (some_condition_where_you_dont_want_the_delayed_click_called) {
+    e.stopImmediatePropagation();
+  }
 });
 ```
