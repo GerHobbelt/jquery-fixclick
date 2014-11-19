@@ -11,10 +11,11 @@
  */
 if (jQuery) {
     (function ($) {
-        $.fn.fixClick = function (click_handler, dblclick_handler) {
+        $.fn.fixClick = function (click_handler, dblclick_handler, immediate_click_handler) {
             var _ = this;
             _.click = click_handler;
             _.dblclick = dblclick_handler;
+            _.click_immediate = immediate_click_handler;
             _.timer = null;
             $(this)
             .unbind("click.fixclick")
@@ -22,6 +23,18 @@ if (jQuery) {
             .on("click.fixclick", function (e) {
                 var _self = this;
                 _self.e = e;
+                
+                // Always invoke the 'immediate click' handler: that way we allow userland code to perform
+                // some very specific tweaks that we cannot do for them (domain knowledge of the userland app required).
+                if (immediate_click_handler) {                        
+                    immediate_click_handler.call(_self, e);
+                    // if the immediate_click_handler invoked e.stopImmediatePropagation() then we abort the remainder 
+                    // of the activity here, including setting up the delayed firing of the click event itself.
+                    if (e.isImmediatePropagationStopped()) {
+                        return;
+                    }
+                }
+
                 if (!_.timer) {
                     // As we delay the click event we need to (shallow) clone the event as we must prevent
                     // any manipulations of the event object from reaching our registered click event handler.
